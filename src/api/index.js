@@ -14,4 +14,11 @@ const webGameApi = axios.create({
   },
 });
 
-export { api, webGameApi };
+const lotteryApi = axios.create({
+  baseURL: import.meta.env.VITE_PUBLIC_ROTTERY_API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+export { api, webGameApi, lotteryApi };
