@@ -136,7 +136,7 @@ function Ranking({ userAddress }) {
         {activeTab === 'lottery' && (
           <div>
             {/* Lottery Summary Statistics */}
-            {lotterySummary && (
+            {lotterySummary && lotterySummary.totalTickets > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-white rounded-lg shadow-md p-4 text-center">
                   <p className="text-gray-500 text-xs mb-1">Total Tickets</p>
@@ -154,6 +154,24 @@ function Ranking({ userAddress }) {
                   <p className="text-gray-500 text-xs mb-1">Total Deposits</p>
                   <p className="text-2xl font-bold text-purple-600">{lotterySummary.totalDepositsKsta || 0}</p>
                   <p className="text-gray-400 text-xs">KSTA</p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-8 mb-6 text-center">
+                <div className="text-5xl mb-4">🎫</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">No Lottery Data Available</h3>
+                <p className="text-gray-600">
+                  Get lottery tickets through KSTA deposits!
+                </p>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {lotteryError && (
+              <div className="max-w-4xl mx-auto mb-6">
+                <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-6 py-4 rounded-lg">
+                  <p className="font-semibold">Lottery rankings temporarily unavailable</p>
+                  <p className="text-sm mt-1">Unable to load lottery data. Please try again later.</p>
                 </div>
               </div>
             )}
@@ -174,15 +192,6 @@ function Ranking({ userAddress }) {
                 </button>
               ))}
             </div>
-
-            {/* Error Message */}
-            {lotteryError && (
-              <div className="max-w-4xl mx-auto mb-6">
-                <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
-                  <p className="font-semibold">{lotteryError}</p>
-                </div>
-              </div>
-            )}
 
             {/* Loading */}
             {isLoadingLottery ? (

@@ -9,7 +9,7 @@ import {
 } from '@/assets/mockData/lotteryMockData';
 
 // Mock mode flag - set to true to use mock data
-const USE_MOCK_DATA = import.meta.env.VITE_USE_LOTTERY_MOCK === 'true' || true; // Default to true for development
+const USE_MOCK_DATA = import.meta.env.VITE_USE_LOTTERY_MOCK === 'false' || false; // Default to true for development
 
 // Simulate API delay
 const mockDelay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
@@ -107,7 +107,7 @@ export const fetchLotterySummary = async (address, revealedOnly = null) => {
       params.revealedOnly = revealedOnly;
     }
     
-    const response = await lotteryApi.get(PATH.ADDRESSDATE, {
+    const response = await lotteryApi.get(PATH.ADDRESSDATA, {
       params
     });
     
