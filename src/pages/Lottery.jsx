@@ -10,9 +10,11 @@ function Lottery({ userAddress }) {
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealing, setIsRevealing] = useState(false);
+  const [showExplosion, setShowExplosion] = useState(false);
   const [revealedTickets, setRevealedTickets] = useState([]);
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState(null);
+  const [countUpValue, setCountUpValue] = useState(0);
 
   const currentTicket = unrevealedTickets[currentIndex];
 
@@ -41,31 +43,50 @@ function Lottery({ userAddress }) {
     try {
       const revealed = await revealLotteryTicket(currentTicket.id, userAddress);
       
+      // 폭발 효과 시작
+      setShowExplosion(true);
+      
+      // 카운트업 애니메이션
+      const finalAmount = revealed.payoutUsd;
+      const duration = 1000; // 1초
+      const steps = 20;
+      const increment = finalAmount / steps;
+      
+      for (let i = 0; i <= steps; i++) {
+        setTimeout(() => {
+          setCountUpValue(Math.min(increment * i, finalAmount));
+        }, (duration / steps) * i);
+      }
+      
       // Store에 업데이트
       updateTicketRevealed(currentTicket.id, revealed);
       
       // 로컬 공개 목록에 추가
       setRevealedTickets(prev => [...prev, revealed]);
       
-      // 다음 티켓으로 자동 이동 (1.5초 후)
+      // 폭발 효과 종료 및 다음 티켓으로 이동
       setTimeout(() => {
+        setShowExplosion(false);
+        setCountUpValue(0);
         if (currentIndex < unrevealedTickets.length - 1) {
           setCurrentIndex(prev => prev + 1);
         }
         setIsRevealing(false);
-      }, 1500);
+      }, 2500);
     } catch (err) {
       console.error('Failed to reveal ticket:', err);
       setError('Failed to reveal ticket. Please try again.');
       setIsRevealing(false);
+      setShowExplosion(false);
+      setCountUpValue(0);
     }
   };
 
   const hasMoreTickets = currentIndex < unrevealedTickets.length - 1;
   const allRevealed = revealedTickets.length === unrevealedTickets.length;
 
-  // No tickets available
-  if (unrevealedTickets.length === 0) {
+  // No tickets available - only show if no tickets at all (not revealed any yet)
+  if (unrevealedTickets.length === 0 && revealedTickets.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 py-12 px-4">
         <div className="container mx-auto max-w-2xl">
@@ -119,28 +140,6 @@ function Lottery({ userAddress }) {
           </p>
         </div>
 
-        {/* Summary Cards */}
-        {summary && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-lg shadow p-4 text-center">
-              <p className="text-gray-500 text-xs mb-1">Total Tickets</p>
-              <p className="text-2xl font-bold text-blue-600">{summary.totalTickets || 0}</p>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 text-center">
-              <p className="text-gray-500 text-xs mb-1">Unrevealed</p>
-              <p className="text-2xl font-bold text-orange-600">{summary.unrevealedTickets || 0}</p>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 text-center">
-              <p className="text-gray-500 text-xs mb-1">Total Winnings</p>
-              <p className="text-2xl font-bold text-green-600">${summary.totalUsd || 0}</p>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 text-center">
-              <p className="text-gray-500 text-xs mb-1">Total KSTA</p>
-              <p className="text-2xl font-bold text-purple-600">{summary.totalKsta || 0}</p>
-            </div>
-          </div>
-        )}
-
         {/* Error Message */}
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
@@ -150,35 +149,81 @@ function Lottery({ userAddress }) {
 
         {/* Current Ticket Card */}
         {!allRevealed && currentTicket && (
-          <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8">
-            <div className="text-center">
-              <div className="text-8xl mb-6">🎟️</div>
+          <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8 relative overflow-hidden">
+            {/* Explosion Effect */}
+            {showExplosion && (
+              <>
+                {/* Background Flash */}
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 animate-pulse opacity-30 z-0"></div>
+                
+                {/* Confetti Particles */}
+                {[...Array(20)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute text-4xl animate-ping"
+                    style={{
+                      left: `${Math.random() * 100}%`,
+                      top: `${Math.random() * 100}%`,
+                      animationDelay: `${Math.random() * 0.5}s`,
+                      animationDuration: `${0.8 + Math.random() * 0.4}s`
+                    }}
+                  >
+                    {['🎉', '🎊', '✨', '💫', '⭐', '🌟'][Math.floor(Math.random() * 6)]}
+                  </div>
+                ))}
+              </>
+            )}
+            
+            <div className="text-center relative z-10">
+              <div className={`text-8xl mb-6 transition-transform duration-500 ${
+                showExplosion ? 'scale-150 rotate-12' : 'scale-100'
+              }`}>
+                🎟️
+              </div>
               
               {revealedTickets.find(t => t.id === currentTicket.id) ? (
-                // Revealed State
-                <div className="animate-fade-in">
-                  <h2 className="text-3xl font-bold text-green-600 mb-4">
-                    🎉 Congratulations!
+                // Revealed State with Explosion
+                <div className={`transition-all duration-700 ${
+                  showExplosion ? 'scale-110' : 'scale-100'
+                }`}>
+                  <h2 className={`text-4xl font-bold mb-6 transition-all duration-500 ${
+                    showExplosion ? 'text-yellow-500 scale-125' : 'text-green-600 scale-100'
+                  }`}>
+                    {showExplosion ? '💥 BOOM! 💥' : '🎉 Congratulations! 🎉'}
                   </h2>
-                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-xl p-6 mb-6">
-                    <p className="text-gray-600 text-sm mb-2">You won</p>
-                    <p className="text-5xl font-bold text-orange-600">
-                      ${revealedTickets.find(t => t.id === currentTicket.id)?.payoutUsd || 0}
+                  
+                  <div className={`bg-gradient-to-r from-yellow-50 to-orange-50 border-4 rounded-2xl p-8 mb-6 transition-all duration-500 ${
+                    showExplosion 
+                      ? 'border-yellow-500 shadow-2xl scale-110' 
+                      : 'border-yellow-400 shadow-lg scale-100'
+                  }`}>
+                    <p className="text-gray-600 text-lg mb-3 font-semibold">You won</p>
+                    <p className={`font-black transition-all duration-300 ${
+                      showExplosion 
+                        ? 'text-7xl text-yellow-600 animate-bounce' 
+                        : 'text-6xl text-orange-600'
+                    }`}>
+                      ${showExplosion ? countUpValue.toFixed(2) : (revealedTickets.find(t => t.id === currentTicket.id)?.payoutUsd || 0)}
                     </p>
                   </div>
-                  <p className="text-gray-500 text-sm mb-4">
-                    Ticket ID: #{currentTicket.id}
-                  </p>
-                  <p className="text-gray-400 text-xs mb-6">
-                    Deposit Tx: {currentTicket.depositTx?.substring(0, 10)}...
-                  </p>
-                  {hasMoreTickets && (
-                    <button
-                      onClick={() => setCurrentIndex(prev => prev + 1)}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
-                    >
-                      Next Ticket →
-                    </button>
+                  
+                  {!showExplosion && (
+                    <>
+                      <p className="text-gray-500 text-sm mb-4">
+                        Ticket ID: #{currentTicket.id}
+                      </p>
+                      <p className="text-gray-400 text-xs mb-6">
+                        Deposit Tx: {currentTicket.depositTx?.substring(0, 10)}...
+                      </p>
+                      {hasMoreTickets && (
+                        <button
+                          onClick={() => setCurrentIndex(prev => prev + 1)}
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                        >
+                          Next Ticket →
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               ) : (
