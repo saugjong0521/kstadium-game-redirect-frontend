@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { webGameApi } from "@/api";
 import { PATH } from "@/constants";
 import { useUserStore } from "@/store";
+import { lotteryApi } from "../api";
 
 // Mock data for testing when API is down
 const MOCK_DATA = [
@@ -32,7 +33,7 @@ const useRanking = (useMockData = false) => {
 
         const users = useMockData
           ? MOCK_DATA
-          : (await webGameApi.get(PATH.RANKING)).data?.users ?? [];
+          : (await lotteryApi.get(PATH.NEWRANKING)).data?.users ?? [];
 
         // 1️⃣ 잔고 기준 정렬
         const sorted = [...users].sort((a, b) => b.balance - a.balance);

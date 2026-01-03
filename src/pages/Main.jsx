@@ -32,9 +32,6 @@ function Main({ userAddress }) {
           <h1 className="text-5xl font-bold text-gray-800 mb-4">
             K STADIUM
           </h1>
-          <p className="text-gray-600 mb-2">
-            Welcome to K Stadium
-          </p>
           <p className="text-gray-500 text-sm">
             Wallet: <span className="font-mono">{userAddress}</span>
           </p>
@@ -119,19 +116,14 @@ function Main({ userAddress }) {
               <p className="text-gray-600 mb-6">
                 {unrevealedCount > 0 
                   ? `You have ${unrevealedCount} unrevealed ticket${unrevealedCount > 1 ? 's' : ''}`
-                  : 'Check and reveal your lottery tickets'
+                  : 'Check your lottery tickets and history'
                 }
               </p>
               <button
                 onClick={() => navigate('/lottery')}
-                disabled={unrevealedCount === 0}
-                className={`w-full ${
-                  unrevealedCount > 0
-                    ? 'bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-700 hover:to-pink-700 transform hover:scale-105'
-                    : 'bg-gray-400 cursor-not-allowed'
-                } text-white px-8 py-3 rounded-lg font-semibold transition-all shadow-lg`}
+                className="w-full bg-gradient-to-r from-orange-600 to-pink-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-orange-700 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg"
               >
-                {unrevealedCount > 0 ? 'Reveal My Tickets' : 'No Tickets Available'}
+                {unrevealedCount > 0 ? 'Reveal My Tickets' : 'View Lottery'}
               </button>
             </div>
           </div>

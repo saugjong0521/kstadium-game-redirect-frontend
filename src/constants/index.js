@@ -22,9 +22,9 @@ const PATH = {
   ADDRESSDATA: "/lottery/summary",
 
   // Q revealedOnly 당첨금 랭킹 
-  RANKING: "/lottery/payouts/ranking"
+  ROTTORANKING: "/lottery/payouts/ranking",
 
-
+  NEWRANKING: "/points/ranking"
 
 };
 

@@ -131,7 +131,7 @@ export const fetchLotteryRanking = async (limit = 100, revealedOnly = null) => {
       params.revealedOnly = revealedOnly;
     }
     
-    const response = await lotteryApi.get(PATH.RANKING, {
+    const response = await lotteryApi.get(PATH.ROTTORANKING, {
       params
     });
     

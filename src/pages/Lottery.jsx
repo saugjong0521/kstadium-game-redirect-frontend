@@ -6,7 +6,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 function Lottery({ userAddress }) {
   const navigate = useNavigate();
-  const { unrevealedTickets, updateTicketRevealed } = useUserStore();
+  const { unrevealedTickets, lotteryTickets, updateTicketRevealed } = useUserStore();
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRevealing, setIsRevealing] = useState(false);
@@ -84,9 +84,10 @@ function Lottery({ userAddress }) {
 
   const hasMoreTickets = currentIndex < unrevealedTickets.length - 1;
   const allRevealed = revealedTickets.length === unrevealedTickets.length;
+  const hasAnyTickets = unrevealedTickets.length > 0 || lotteryTickets.length > 0 || revealedTickets.length > 0;
 
-  // No tickets available - only show if no tickets at all (not revealed any yet)
-  if (unrevealedTickets.length === 0 && revealedTickets.length === 0) {
+  // No tickets at all - never received any
+  if (!hasAnyTickets) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 py-12 px-4">
         <div className="container mx-auto max-w-2xl">
@@ -148,7 +149,7 @@ function Lottery({ userAddress }) {
         )}
 
         {/* Current Ticket Card */}
-        {!allRevealed && currentTicket && (
+        {unrevealedTickets.length > 0 && currentTicket && (
           <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8 relative overflow-hidden">
             {/* Explosion Effect */}
             {showExplosion && (
@@ -264,13 +265,25 @@ function Lottery({ userAddress }) {
           </div>
         )}
 
+        {/* No Unrevealed Tickets Message */}
+        {unrevealedTickets.length === 0 && revealedTickets.length === 0 && lotteryTickets.length > 0 && (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-8 mb-8 text-center">
+            <div className="text-5xl mb-4">✨</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">All Tickets Revealed!</h3>
+            <p className="text-gray-600">
+              You've revealed all your lottery tickets. Check your winnings below.
+            </p>
+          </div>
+        )}
+
         {/* Revealed Tickets Summary */}
-        {revealedTickets.length > 0 && (
+        {(revealedTickets.length > 0 || lotteryTickets.filter(t => t.revealed).length > 0) && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h3 className="text-xl font-bold text-gray-800 mb-4">
-              Revealed Tickets ({revealedTickets.length})
+              Revealed Tickets ({revealedTickets.length > 0 ? revealedTickets.length : lotteryTickets.filter(t => t.revealed).length})
             </h3>
             <div className="space-y-3 max-h-96 overflow-y-auto">
+              {/* Show tickets revealed in this session */}
               {revealedTickets.map((ticket) => (
                 <div
                   key={ticket.id}
@@ -294,21 +307,49 @@ function Lottery({ userAddress }) {
                   </div>
                 </div>
               ))}
+              
+              {/* Show previously revealed tickets from store if no tickets revealed in this session */}
+              {revealedTickets.length === 0 && lotteryTickets.filter(t => t.revealed).map((ticket) => (
+                <div
+                  key={ticket.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🎫</span>
+                    <div>
+                      <p className="font-semibold text-gray-800">
+                        Ticket #{ticket.id}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {ticket.revealedAt ? new Date(ticket.revealedAt).toLocaleString() : 'Previously revealed'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-orange-600">
+                      ${ticket.payoutUsd}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
             
             {/* Total Winnings */}
             <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="flex items-center justify-between">
                 <p className="text-lg font-semibold text-gray-800">
-                  Total Winnings
+                  Total Winnings {revealedTickets.length > 0 ? '(This Session)' : ''}
                 </p>
                 <p className="text-3xl font-bold text-green-600">
-                  ${revealedTickets.reduce((sum, t) => sum + t.payoutUsd, 0)}
+                  ${revealedTickets.length > 0 
+                    ? revealedTickets.reduce((sum, t) => sum + t.payoutUsd, 0) 
+                    : lotteryTickets.filter(t => t.revealed).reduce((sum, t) => sum + t.payoutUsd, 0)
+                  }
                 </p>
               </div>
             </div>
 
-            {allRevealed && (
+            {(allRevealed || unrevealedTickets.length === 0) && (
               <button
                 onClick={() => navigate('/')}
                 className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all"
