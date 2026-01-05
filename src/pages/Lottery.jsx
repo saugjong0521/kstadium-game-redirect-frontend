@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/store';
 import { revealLotteryTicket, fetchLotterySummary } from '@/api/lotteryApi';
@@ -43,12 +43,10 @@ function Lottery({ userAddress }) {
     try {
       const revealed = await revealLotteryTicket(currentTicket.id, userAddress);
       
-      // 폭발 효과 시작
       setShowExplosion(true);
       
-      // 카운트업 애니메이션
       const finalAmount = revealed.payoutUsd;
-      const duration = 1000; // 1초
+      const duration = 1000;
       const steps = 20;
       const increment = finalAmount / steps;
       
@@ -58,19 +56,12 @@ function Lottery({ userAddress }) {
         }, (duration / steps) * i);
       }
       
-      // Store에 업데이트
       updateTicketRevealed(currentTicket.id, revealed);
-      
-      // 로컬 공개 목록에 추가
       setRevealedTickets(prev => [...prev, revealed]);
       
-      // 폭발 효과 종료 및 다음 티켓으로 이동
       setTimeout(() => {
         setShowExplosion(false);
         setCountUpValue(0);
-        if (currentIndex < unrevealedTickets.length - 1) {
-          setCurrentIndex(prev => prev + 1);
-        }
         setIsRevealing(false);
       }, 2500);
     } catch (err) {
@@ -79,6 +70,12 @@ function Lottery({ userAddress }) {
       setIsRevealing(false);
       setShowExplosion(false);
       setCountUpValue(0);
+    }
+  };
+
+  const handleNextTicket = () => {
+    if (currentIndex < unrevealedTickets.length - 1) {
+      setCurrentIndex(prev => prev + 1);
     }
   };
 
@@ -154,10 +151,7 @@ function Lottery({ userAddress }) {
             {/* Explosion Effect */}
             {showExplosion && (
               <>
-                {/* Background Flash */}
                 <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 animate-pulse opacity-30 z-0"></div>
-                
-                {/* Confetti Particles */}
                 {[...Array(20)].map((_, i) => (
                   <div
                     key={i}
@@ -183,7 +177,7 @@ function Lottery({ userAddress }) {
               </div>
               
               {revealedTickets.find(t => t.id === currentTicket.id) ? (
-                // Revealed State with Explosion
+                // Step 3 & 4: Prize Revealed + Next Button
                 <div className={`transition-all duration-700 ${
                   showExplosion ? 'scale-110' : 'scale-100'
                 }`}>
@@ -216,32 +210,48 @@ function Lottery({ userAddress }) {
                       <p className="text-gray-400 text-xs mb-6">
                         Deposit Tx: {currentTicket.depositTx?.substring(0, 10)}...
                       </p>
+                      
+                      {/* Step 4: Next Ticket Button */}
                       {hasMoreTickets && (
                         <button
-                          onClick={() => setCurrentIndex(prev => prev + 1)}
-                          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                          onClick={handleNextTicket}
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
                         >
-                          Next Ticket →
+                          Check Next Ticket →
                         </button>
+                      )}
+                      
+                      {!hasMoreTickets && (
+                        <p className="text-gray-600 text-lg">
+                          All tickets revealed!
+                        </p>
                       )}
                     </>
                   )}
                 </div>
               ) : (
-                // Unrevealed State
+                // Step 1 & 2: Button to Reveal
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                    Scratch to Reveal
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6">
+                    Reveal Your Prize!
                   </h2>
-                  <p className="text-gray-600 mb-6">
-                    Click the button below to reveal your prize
-                  </p>
+                  
+                  {/* Prize Amount Display */}
+                  <div className="bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-200 rounded-xl p-6 mb-6">
+                    <p className="text-gray-500 text-sm mb-2">Prize Amount</p>
+                    <p className="text-5xl font-black text-orange-600">
+                      ${currentTicket.payoutUsd || 0}
+                    </p>
+                  </div>
+                  
                   <p className="text-gray-500 text-sm mb-2">
                     Ticket ID: #{currentTicket.id}
                   </p>
-                  <p className="text-gray-400 text-xs mb-6">
+                  <p className="text-gray-400 text-xs mb-8">
                     Deposit Tx: {currentTicket.depositTx?.substring(0, 10)}...
                   </p>
+                  
+                  {/* Reveal Button */}
                   <button
                     onClick={handleRevealTicket}
                     disabled={isRevealing}
@@ -265,18 +275,18 @@ function Lottery({ userAddress }) {
           </div>
         )}
 
-        {/* No Unrevealed Tickets Message */}
+        {/* No Unrevealed Tickets - Step 1 Alternative */}
         {unrevealedTickets.length === 0 && revealedTickets.length === 0 && lotteryTickets.length > 0 && (
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-8 mb-8 text-center">
             <div className="text-5xl mb-4">✨</div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">All Tickets Revealed!</h3>
             <p className="text-gray-600">
-              You've revealed all your lottery tickets. Check your winnings below.
+              Send KSTA to get more lottery tickets.
             </p>
           </div>
         )}
 
-        {/* Revealed Tickets Summary */}
+        {/* Step 5: Revealed Tickets History */}
         {(revealedTickets.length > 0 || lotteryTickets.filter(t => t.revealed).length > 0) && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h3 className="text-xl font-bold text-gray-800 mb-4">
