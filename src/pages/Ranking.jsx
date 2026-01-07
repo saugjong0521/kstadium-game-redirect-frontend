@@ -117,17 +117,19 @@ function Ranking({ userAddress }) {
                   <p className="text-sm mt-1">Unable to load rankings. Please try again later.</p>
                 </div>
               </div>
-            ) : top10.length > 0 ? (
-              <>
-                <MyRankingCard myRank={myRank} />
-                <RankingTable rankings={top10} userAddress={userAddress} />
-              </>
             ) : (
-              <div className="max-w-4xl mx-auto">
-                <div className="bg-gray-50 border border-gray-200 text-gray-600 px-6 py-4 rounded-lg text-center">
-                  <p>No ranking data available</p>
-                </div>
-              </div>
+              <>
+                {myRank && <MyRankingCard myRank={myRank} />}
+                {top10.length > 0 ? (
+                  <RankingTable rankings={top10} userAddress={userAddress} />
+                ) : (
+                  <div className="max-w-4xl mx-auto">
+                    <div className="bg-gray-50 border border-gray-200 text-gray-600 px-6 py-4 rounded-lg text-center">
+                      <p>No ranking data available</p>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

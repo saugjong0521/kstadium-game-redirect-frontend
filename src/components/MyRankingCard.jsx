@@ -1,5 +1,8 @@
 const MyRankingCard = ({ myRank }) => {
-    if (!myRank) return null;
+    // 삼성 브라우저 호환성을 위한 명시적 체크
+    if (!myRank || !myRank.id) {
+        return null;
+    }
 
     const formatBalance = (balance) => {
         const num = parseFloat(balance);
@@ -30,8 +33,9 @@ const MyRankingCard = ({ myRank }) => {
                 </div>
             </div>
 
-            <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
+            {/* gap 대신 margin 사용하여 삼성 브라우저 호환성 개선 */}
+            <div className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div className="mb-3 sm:mb-0 sm:mr-4">
                     <p className="text-xs text-gray-500 uppercase tracking-wide">
                         Wallet Address
                     </p>
@@ -40,7 +44,7 @@ const MyRankingCard = ({ myRank }) => {
                     </p>
                 </div>
 
-                <div>
+                <div className="mb-3 sm:mb-0 sm:mr-4">
                     <p className="text-xs text-gray-500 uppercase tracking-wide">
                         Ranking
                     </p>
@@ -50,7 +54,7 @@ const MyRankingCard = ({ myRank }) => {
                 </div>
 
                 {myRank.balance !== undefined && (
-                    <div className="text-right">
+                    <div className="text-left sm:text-right">
                         <p className="text-xs text-gray-500 uppercase tracking-wide">
                             Balance
                         </p>

@@ -46,9 +46,10 @@ const useRanking = (useMockData = false) => {
 
         setTop10(top10List);
 
-        // 3️⃣ 내 랭킹 찾기
+        // 3️⃣ 내 랭킹 찾기 (대소문자 무시 비교)
         const myIndex = sorted.findIndex(
-          (user) => user.id === userAddress
+          (user) => user.id && userAddress && 
+            user.id.toLowerCase() === userAddress.toLowerCase()
         );
 
         if (myIndex !== -1) {
