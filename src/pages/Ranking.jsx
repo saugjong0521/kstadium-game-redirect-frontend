@@ -151,7 +151,7 @@ function Ranking({ userAddress }) {
                   <p className="text-2xl font-bold text-green-600">${lotterySummary.totalPayoutUsd || 0}</p>
                 </div>
                 <div className="bg-white rounded-lg shadow-md p-4 text-center">
-                  <p className="text-gray-500 text-xs mb-1">Total Deposits</p>
+                  <p className="text-gray-500 text-xs mb-1">Total Pays</p>
                   <p className="text-2xl font-bold text-purple-600">{lotterySummary.totalDepositsKsta || 0}</p>
                   <p className="text-gray-400 text-xs">KSTA</p>
                 </div>

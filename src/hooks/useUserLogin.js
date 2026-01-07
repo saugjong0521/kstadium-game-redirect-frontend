@@ -17,8 +17,8 @@ const USE_MOCK_AUTH = import.meta.env.VITE_USE_AUTH_MOCK === 'true' || false;
 const mockDelay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
 const useUserLogin = () => {
-  const { setAccessToken } = useAccessTokenStore();
-  const { setUserInfo, setUserAddress } = useUserStore();
+  const { getAccessToken, setAccessToken } = useAccessTokenStore();
+  const { userInfo, userAddress, setUserInfo, setUserAddress } = useUserStore();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -27,6 +27,15 @@ const useUserLogin = () => {
 
   useEffect(() => {
     const login = async () => {
+      // 저장된 accessToken이 있고 userInfo도 있으면 자동 인증
+      const savedAccessToken = getAccessToken;
+      if (savedAccessToken && userInfo && userAddress) {
+        console.log('✅ Using saved authentication');
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
+
       // Mock authentication mode
       if (USE_MOCK_AUTH) {
         console.log('🔑 Using MOCK authentication');
@@ -58,8 +67,9 @@ const useUserLogin = () => {
 
       // Real authentication mode
       if (!accessKey) {
-        console.log('❌ No accessKey provided');
+        console.log('❌ No accessKey provided and no saved authentication');
         setIsLoading(false);
+        setIsAuthenticated(false);
         return;
       }
 
@@ -88,7 +98,7 @@ const useUserLogin = () => {
     };
 
     login();
-  }, [accessKey]);
+  }, [accessKey, getAccessToken, userInfo, userAddress]);
 
   return {
     isLoading,

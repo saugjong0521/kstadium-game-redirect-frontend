@@ -30,10 +30,10 @@ function Main({ userAddress }) {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-gray-800 mb-4">
-            K STADIUM
+            K STADIUM x GAME
           </h1>
           <p className="text-gray-500 text-sm">
-            Wallet: <span className="font-mono">{userAddress}</span>
+            Your Wallet: <span className="font-mono">{userAddress}</span>
           </p>
         </div>
 

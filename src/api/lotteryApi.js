@@ -8,8 +8,8 @@ import {
   mockRevealTicket
 } from '@/assets/mockData/lotteryMockData';
 
-// Mock mode flag - set to true to use mock data
-const USE_MOCK_DATA = import.meta.env.VITE_USE_LOTTERY_MOCK === 'true' || true; // Default to true for development
+// Mock mode flag - set to 'true' in .env to use mock data
+const USE_MOCK_DATA = import.meta.env.VITE_USE_LOTTERY_MOCK === 'true';
 
 // Simulate API delay
 const mockDelay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
